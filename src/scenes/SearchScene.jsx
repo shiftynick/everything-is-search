@@ -24,12 +24,15 @@ const KNOBS = [
 const CUSTOM_DEFAULT = { phase: 1.6, radiusBase: 6.2, impossibility: 0.34, reach: 0, ratchet: 0.3, generativity: 0.65, targetPull: 0, seed: 3 }
 
 const VERDICT_CLASS = { blooming: 'v-bloom', saturated: 'v-bloom', fragmented: 'v-frag', converged: 'v-frag', died: 'v-die' }
+// The verdict lines carry the thesis arc: every system is search (a space filling by adjacent
+// steps under a filter), and none of them is trying. The converged line is where the reframe
+// lands hardest — convergence is what "aiming at a goal" looks like from outside.
 const VERDICT_LINE = {
-  blooming: 'Blooming — a living frontier, and most of the space still unrealized.',
-  converged: 'Converged — climbed to the one optimum and stopped; the rest stays dark.',
-  fragmented: 'Fragmented — filled its pocket; the remainder is walled away.',
-  died: 'Died — the frontier went extinct before it spread.',
-  saturated: 'Saturated — filled nearly everything it could reach.',
+  blooming: 'Blooming — a living frontier, most of the space still unrealized. No target: it just keeps taking adjacent steps.',
+  converged: "Converged — it climbed to one optimum and stopped. But nothing aimed; the “goal” is only where the filter ran out of better neighbours.",
+  fragmented: 'Fragmented — it filled its pocket; the rest stays possible but walled away, forever out of reach.',
+  died: 'Died — the frontier went extinct before it spread. The filter caught nothing that could persist.',
+  saturated: 'Saturated — it filled nearly everything it could reach; the ratchet was too loose to leave a remainder.',
 }
 const cap = (v) => (v ? v[0].toUpperCase() + v.slice(1) : '')
 

@@ -51,7 +51,8 @@ export default function EngineBlob({ preset, palette, playRef, reveal, onResult 
   const work = useMemo(() => {
     const state = new Int8Array(count)
     const lastAct = new Float32Array(count) // tick a cell most recently actualized
-    return { state, lastAct }
+    const bigScale = new Uint8Array(count) // 1 if the cell's matrix is at the "pore/frontier" scale
+    return { state, lastAct, bigScale }
   }, [count])
 
   const alphaAttr = useMemo(
@@ -80,12 +81,17 @@ export default function EngineBlob({ preset, palette, playRef, reveal, onResult 
     if (import.meta.env.DEV && typeof window !== 'undefined') window.__blob = mesh
     patchAlpha(mesh.material)
     cursor.current.tick = -1 // force a full rebuild on the next frame
+    cursor.current.paintTarget = -1 // force the next frame to actually repaint
+    cursor.current.paintReveal = undefined
     // seed everything dark/impossible so the very first paint isn't a flash of default colour
     for (let i = 0; i < count; i++) {
-      work.state[i] = cells[i].impossible ? STATE.IMPOSSIBLE : STATE.DARK
+      const st0 = cells[i].impossible ? STATE.IMPOSSIBLE : STATE.DARK
+      work.state[i] = st0
       work.lastAct[i] = 0
+      const sc = scaleFor(st0)
+      work.bigScale[i] = sc === 0.24 ? 0 : 1
       _obj.position.set(cells[i].px, cells[i].py, cells[i].pz)
-      _obj.scale.setScalar(scaleFor(work.state[i]))
+      _obj.scale.setScalar(sc)
       _obj.updateMatrix()
       mesh.setMatrixAt(i, _obj.matrix)
     }
@@ -123,7 +129,13 @@ export default function EngineBlob({ preset, palette, playRef, reveal, onResult 
       cursor.current.tick = target
     }
 
-    // Repaint: colour + alpha + (state-dependent) scale for every cell.
+    // Nothing to repaint if the playhead sits on the same tick and reveal is unchanged — the
+    // cell states (and so every colour/alpha) are identical. Skips the whole per-instance loop
+    // while paused or settled, which is most frames after the fill finishes.
+    if (target === cursor.current.paintTarget && reveal === cursor.current.paintReveal) return
+
+    // Repaint: colour + alpha every cell; rewrite a matrix only when its scale bucket flips
+    // (positions are static — set once at init — and only frontier/impossible cells are larger).
     const maxAge = Math.max(1, ticks * 0.9)
     const arr = alphaAttr.array
     let matrixDirty = false
@@ -133,17 +145,21 @@ export default function EngineBlob({ preset, palette, playRef, reveal, onResult 
       const a = writeRenderCell(_col, { state: s, age, maxAge, fit: cells[i].fit, reveal }, palette)
       mesh.setColorAt(i, _col)
       arr[i] = a
-      // keep scale in sync with state (cheap; only frontier/impossible differ)
-      const sc = scaleFor(s)
-      _obj.position.set(cells[i].px, cells[i].py, cells[i].pz)
-      _obj.scale.setScalar(sc)
-      _obj.updateMatrix()
-      mesh.setMatrixAt(i, _obj.matrix)
-      matrixDirty = true
+      const big = scaleFor(s) === 0.24 ? 0 : 1
+      if (big !== work.bigScale[i]) {
+        work.bigScale[i] = big
+        _obj.position.set(cells[i].px, cells[i].py, cells[i].pz)
+        _obj.scale.setScalar(big ? 0.30 : 0.24)
+        _obj.updateMatrix()
+        mesh.setMatrixAt(i, _obj.matrix)
+        matrixDirty = true
+      }
     }
-    mesh.instanceColor.needsUpdate = true
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
     alphaAttr.needsUpdate = true
     if (matrixDirty) mesh.instanceMatrix.needsUpdate = true
+    cursor.current.paintTarget = target
+    cursor.current.paintReveal = reveal
   })
 
   return (

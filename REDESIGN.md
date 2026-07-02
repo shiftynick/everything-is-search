@@ -102,14 +102,20 @@ scrubbable). Cell states: `impossible` · `dark` (possible, unreached) · `front
 (adjacent-possible) · `actualized` · `faded` (actualized, then lost — a fossil tint).
 
 Per tick, for each frontier cell: actualize with probability shaped by the knobs; on
-actualization, its neighbors join the frontier. The knobs — same set for every system:
+actualization, its neighbors join the frontier. Recruitment is **one-shot** — the first time an
+actualized cell reaches a never-yet-reached neighbour, that neighbour opens with probability
+`generativity`, and that is its only chance; a miss leaves it permanently dark. This is what
+makes the "vast unrealized remainder" a *stable* regime rather than an all-or-nothing race
+between fizzle and total fill (an earlier retry rule re-rolled every reachable cell until it
+opened, so open-ended bloom always saturated — see the implementation note below). The knobs —
+same set for every system:
 
 | Knob | What it does mechanically | Anatomy lens |
 |---|---|---|
 | **Impossibility** | Fraction + granularity of structurally excluded cells. Two components: large connected voids (shape) *and* fine-grained scatter (percolation). The scatter term is what actually strands regions — this fixes the "71% impossible still blooms" failure. | Possibility volume |
 | **Reach** | Neighborhood radius of one step. Below ~percolation threshold the fill fragments; above it, it floods. | Adjacency |
 | **Ratchet** | Retention: probability an actualized cell *persists* each tick vs fades back to dark. Strict ratchet + low generativity = the fill can genuinely die out — extinction becomes possible, not just slow filling. | Ratchet |
-| **Generativity** | Feedback: each actualization *adds* reachable volume — either by unlocking neighbors-of-neighbors or by literally growing the lattice at the rim (Family B's "expanding space," which the current build fakes with a fixed space). At 0 the frontier only shrinks; high, it compounds. **This is the missing knob, and the most on-thesis one.** | Generativity |
+| **Generativity** | The one-shot occupation probability above: each newly-reached cell opens with this chance, once. It behaves like a **site-percolation** knob — low fizzles, a broad middle band spreads but strands a continuous fraction forever (the open-ended unrealized), near 1 saturates. (FADED cells are exempt from one-shot, so the ratchet's churn can re-recruit what already proved reachable.) Literal lattice growth at the rim — Family B's "expanding space" — is deferred; recruitment stands in for it on a fixed lattice. **The most on-thesis knob.** | Generativity |
 | **Target pull** | Bias actualization probability by an objective gradient (distance to an optimum, or the `fit` field). At max, the process converges and the frontier dies at the optimum: Family A. At 0: open-ended. **Families become one continuous dial, not two hand-painted color modes.** | (the A/B axis) |
 
 What this buys:
@@ -132,6 +138,18 @@ What this buys:
 Engine lives in a pure module (`lib/engine.js`), UI-independent and unit-testable: assert
 percolation behavior, extinction under strict ratchet, convergence under target pull —
 cheap guards against the "verdict math says bloom but nothing visibly changed" class of bug.
+
+**Implementation note (recruitment, resolved).** The first engine used *retry* recruitment:
+every actualization re-rolled each dark neighbour, so the probability a reachable cell ever
+opened tended to 1. That made the fill bistable — it either fizzled (subcritical) or filled
+~99% of its reachable volume (supercritical), with no stable in-between. So open-ended bloom
+always *saturated*, and "reveal the unrealized" was near-empty — the exact thesis-contradicting
+failure §1 flagged, reintroduced by the engine's own dynamics. The fix is **one-shot
+recruitment** (above): generativity becomes a percolation occupation probability with a smooth
+partial-fill band, so a bloom can settle leaving most of the space reachable-but-never-taken.
+The verdict logic distinguishes that open-ended remainder (`refused`: reached-adjacent, roll
+missed) from fragmentation (`unexposedPossible`: the frontier never arrived, walled off).
+`tests/engine.test.js` pins both regimes; `tests/domains.test.js` asserts no preset saturates.
 
 ## 5. The visual language: a volume you can see into
 

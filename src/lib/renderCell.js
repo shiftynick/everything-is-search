@@ -21,7 +21,7 @@ const AMBER = [1.0, 0.66, 0.2] // the revealed unrealized
 const FADED = [0.28, 0.31, 0.29] // fossil: was actualized, lost to the ratchet
 const FRONTIER = [0.92, 1.0, 0.95] // the adjacent possible — the star
 const HIST_NEW = [0.46, 0.98, 0.76] // freshly actualized
-const HIST_OLD = [0.13, 0.5, 0.42] // old accretion (kept luminous so the core doesn't go black)
+const HIST_OLD = [0.18, 0.62, 0.5] // old accretion (kept luminous so the settled core stays legible)
 
 // Alpha per state — the see-through budget. Dark stays near-invisible (you see THROUGH the
 // unreached volume); actualized is solid enough to read as accreted history; frontier is
@@ -31,7 +31,7 @@ const A_DARK = 0.06
 const A_DARK_REVEALED = 0.6
 const A_FADED = 0.2
 const A_FRONTIER = 0.98
-const A_ACT_MIN = 0.45
+const A_ACT_MIN = 0.58 // settled history stays readable (was 0.45 — the t=1 blob went too dark)
 const A_ACT_MAX = 0.85
 
 // Writes r,g,b into `col` (THREE.Color) and returns alpha. Palette lets a domain retint the
