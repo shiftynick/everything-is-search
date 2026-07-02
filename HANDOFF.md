@@ -1,87 +1,90 @@
 # Handoff — The Space of the Possible
 
-> **2026-07-02: superseded in part by [REDESIGN.md](REDESIGN.md)** — the first real-browser
-> review found thesis-level visual failures, and an author interview corrected the project's
-> direction (thesis restored to "everything is search"; three acts replaced by a single
-> multi-system visualizer; richer emergent dynamics). Read REDESIGN.md first; the notes below
-> describe the pre-redesign build.
+Where things stand and what's next. For *what it is / how to run it* read [README.md](README.md);
+for the *architecture + plan* read [REDESIGN.md](REDESIGN.md); for the *conceptual anatomy* read
+[DESIGN.md](DESIGN.md).
 
-Status notes for picking this back up. For the *why* read [DESIGN.md](DESIGN.md); for *what it
-does / how to run it* read [README.md](README.md). This file is the "where we are and what's next."
-
-_Last updated: 2026-07-02._
+_Last updated: 2026-07-02 (redesign built, merged to `main`, pushed)._
 
 ## Where we are
 
-- All three acts are **built, running, and pushed**: https://github.com/shiftynick/everything-is-search (public, `main`).
-- Production build passes. Run locally with `npm install && npm run dev`, then use the nav (top-center) to switch acts.
-- The whole thing is one small Vite + react-three-fiber app. No backend, no data files — every blob is generated deterministically in `src/lib/possibilitySpace.js`.
+The **[REDESIGN.md](REDESIGN.md) plan is fully built and on `main`** (pushed to
+https://github.com/shiftynick/everything-is-search). The three-act site was replaced by **one
+screen**: a single possibility space driven by one engine, with a system switcher across the top.
+
+- `npm install && npm run dev`, then use the switcher (top-centre) to change systems.
+- `npm test` — 15 tests pass (engine regimes + domain-preset guards). `npm run build` passes.
+- Still one small Vite + react-three-fiber app, no backend. Every blob is generated
+  deterministically by `src/lib/engine.js` from a seed + five knobs.
 
 ## The idea in one breath
 
-Search isn't a thing hunting a target — it's the **actualization of the adjacent possible**. A
-space of what's possible fills in one reachable step at a time; **persistence is the ratchet**
-(a filter, not a goal) that decides what stays lit; and most of the space never gets reached.
-Two families: **A** (fixed space, real target, *converges*) and **B** (expanding space, no
-target, *blooms*). A tiles B — optimization is search seen locally, open-endedness seen globally.
+**Everything is search.** A space of the possible fills itself in one adjacent step at a time;
+**persistence is the ratchet** (a filter, not a goal) that decides what stays; and most of the
+space never gets reached. Two families — **A** (target pull → *converges*) and **B** (no target
+→ *blooms*) — are settings of one dial, not separate exhibits. The resolving beat: none of them
+is *trying* — aim is what a filter looks like from inside it.
 
-## What's built
+## What's built (the redesign, 4 commits)
 
-- **Act I — Thesis** (`scenes/ActI.jsx`, `components/Blob.jsx`): one possibility blob fills from
-  a seed; glowing frontier = adjacent possible; timeline scrubber; Open-ended↔Optimization morph;
-  reveal-the-unrealized.
-- **Act II — Atlas** (`scenes/ActII.jsx`, `components/DomainBlob.jsx`, `lib/domains.js`): scale-
-  ordered carousel of six domains (physics→cosmos) with Family A/B badges and the five-lens
-  panel; **Descend into a cell** on a B domain reveals the nested A search.
-- **Act III — Sandbox** (`scenes/ActIII.jsx`, `components/SandboxBlob.jsx`): three rules —
-  Impossibility / Reach / Ratchet — reshape the space live with a Blooms/Fragments/Dies verdict;
-  click a cell to name it.
-- Shared: `lib/possibilitySpace.js` (blob + BFS fill, parameterised by `phase/threshold/
-  radiusBase/reach/ratchet`), `lib/cellColor.js` (per-cell colouring for all acts).
+1. **Engine** (`lib/engine.js`) — stepped stochastic growth, five knobs (impossibility / reach /
+   ratchet / generativity / targetPull), event log for scrub-replay, emergent verdicts
+   (blooming / converged / fragmented / died / saturated). Uses **one-shot recruitment** (see
+   Key decisions).
+2. **Presets** (`lib/domains.js`) — six systems tuned to the new knobs via a `knobs` field;
+   `tests/domains.test.js` asserts **no preset saturates** and the A/B families are real.
+3. **Shell** (`scenes/SearchScene.jsx`, `components/EngineBlob.jsx`, `lib/renderCell.js`) — the
+   one-screen visualizer: switcher (Physics · Biology · Society · Custom), lens panel + A/B
+   badge + caveat + Fork-to-Custom, Custom knob sliders, live verdict, stats line, frontier
+   sparkline, camera auto-fit, bloom. `App.jsx` renders only this (act nav deleted).
+4. **Polish** — perf (skip repaint when idle; matrix rewrite only on scale change), settled-look
+   legibility, thesis copy woven into the verdict lines, REDESIGN §4 synced to the code.
 
 ## Key decisions (the non-obvious reasoning)
 
-- Dropped the slogan **"everything *is* search"** — it's unfalsifiable — for "actualization of the
-  adjacent possible," which forbids things (no reachability ⇒ not search).
-- **Persistence is a filter, not a goal.** "Aim" is what a filter looks like from inside it.
-- Pivoted the visual from a **fitness-landscape ball** to a **possibility blob with a frontier and
-  permanent voids** — the space is the hero, not a searcher on it.
-- **Two families (A converges / B blooms)** are the organising spine; the nesting ("A tiles B,
-  zoom is the connective tissue") is Act II's payoff.
-- The sandbox exists so the user **operates the framework**: the three sliders map directly to
-  the void threshold, BFS adjacency reach, and a fitness-gated retention (ratchet).
-- Least action is flagged as the honest edge case — it's a variational trajectory, not selection.
+- **One-shot recruitment.** The first engine re-rolled every dark neighbour on each adjacent
+  actualization, so reachable cells always eventually opened → the fill was bistable (fizzle vs
+  ~99% saturate), and open-ended bloom could never leave a stable remainder. Now a DARK cell
+  gets ONE generativity roll on first contact; a miss is permanently dark. Generativity became a
+  percolation knob with a smooth partial-fill band. (FADED cells are exempt, so ratchet churn
+  survives.) The verdict logic tells the open-ended remainder (`stats.refused`) from
+  fragmentation (`stats.unexposedPossible`).
+- **"Everything is search" restored** as the thesis (universality); **"nothing is searching"**
+  demoted to a resolving beat, now delivered by the *converged* verdict line where it lands
+  hardest.
+- **See-through instanced volume.** Per-instance colour via `instanceColor`, per-instance alpha
+  via a custom `aAlpha` attribute + a small shader patch. Do **not** set `vertexColors` on the
+  material — it switches on the per-vertex `color` path the icosahedron lacks and blacks out
+  every cell (the bug that made the whole blob invisible before this session).
+- Least action stays flagged as the honest edge case — a variational trajectory, not selection
+  (the "where this portrait bends" caveat on Physics).
 
-## Not yet verified (do this first on return)
+## Environment gotchas (still true)
 
-The dev preview used during the build runs in a **hidden browser tab**, which freezes
-`requestAnimationFrame` — so animation never ran and screenshots were impossible there. Verified:
-build, mount, WebGL context, DOM/logic, live verdict math, zero console errors. **Not** verified
-by eye: actual blob rendering, bloom-glow feel, Act II carousel motion + descend crossfade, and
-Act III click-to-name raycast. **→ First task next time: open all three acts in a real browser and
-eyeball them.**
+- **Hidden-tab preview freezes `requestAnimationFrame`**, so live screenshots are impossible and
+  the initial `ResizeObserver` can be skipped (SearchScene does a one-shot resize nudge on mount —
+  keep it). Verification trick: `EngineBlob` exposes `window.__blob` in DEV; get the r3f store
+  via `window.__blob.__r3f.root.getState()`, override `st.clock.getDelta`, pump `st.advance(ts)`
+  in a loop, and read pixels with `gl.getContext().readPixels` (render + read in the SAME eval —
+  the drawing buffer clears between calls). A real `preview_resize` fires the ResizeObserver so
+  r3f commits its first frame.
+- `vite.config.js` reads `process.env.PORT` so the preview proxy and dev server agree — keep it.
+- No `gh` CLI; GitHub over **SSH** (authenticates as `shiftynick`). Commit identity is set
+  **repo-local** to `shiftynick <shiftynick@gmail.com>` (global git is a work identity).
 
-## Environment gotchas
+## Next (all deferred, author's call)
 
-- Hidden-tab preview freezes rAF (no animation/screenshots) and sometimes skips the initial
-  ResizeObserver — each scene has a one-shot resize nudge on mount to compensate. Keep it.
-- `vite.config.js` reads `process.env.PORT` so the preview proxy and dev server agree — don't remove.
-- No `gh` CLI on this machine; GitHub push works over **SSH** (authenticates as `shiftynick`).
-- Commit identity is set **repo-local** to `shiftynick <shiftynick@gmail.com>` (global git is a work identity).
-
-## Open threads / next steps (roughly prioritised)
-
-1. **Eyeball all three acts in a real browser**; tune look — glow intensity, cell density, blob
-   spacing, rotation/auto-rotate balance, descend transition.
-2. Add a **LICENSE** (MIT is the usual pick) — repo is public, currently all-rights-reserved by default.
-3. Act III opens at a clean 100% bloom; nudge defaults so a little of the **unrealized** shows on
-   load, making "reveal" meaningful immediately.
-4. Swap one blob for a **real-data embedding** (chemical / protein / latent space) to earn its shape.
-5. Act II descend → a **real camera push-in** (currently a crossfade); per-domain **growth
-   morphologies** (dendritic, reaction-diffusion, branching).
-6. **Onboarding / transitions** between acts; a short guided narrative or landing/intro.
-7. Represent the **static-stability vs dynamic-persistence** distinction from the design convo
-   (attractor geometry: point vs limit-cycle vs manifold) — discussed, not yet built.
+1. Grow the catalog from **three systems to six** — Chemistry / Mind / Cosmos presets are
+   already tuned in `domains.js`; they just need adding to `SYSTEM_IDS` in `SearchScene.jsx`.
+2. **Descend into a cell** → a real camera push that re-seeds the engine with a child preset
+   (the "zoom is the connective tissue" claim made literal). Not a crossfade.
+3. Per-domain **growth morphologies** (dendritic, reaction-diffusion, branching).
+4. A **real-data embedding** (chemical / protein / latent space) to earn a blob's shape.
+5. **Permalink / seed sharing** for Custom (URL-encoded knobs + seed).
+6. Add a **LICENSE** — repo is public, currently all-rights-reserved by default (MIT is the usual pick).
+7. **Delete the legacy files** once their keepers are folded in — `scenes/ActI|II|III.jsx`,
+   `components/Blob|DomainBlob|SandboxBlob|*Overlay.jsx`, `lib/possibilitySpace.js`, `store.js`
+   are unreferenced (nothing imports them; `App.jsx` renders only the shell).
 8. Perf: code-split three.js if the ~1 MB bundle starts to matter.
 
 ## Resume checklist
@@ -89,5 +92,6 @@ eyeball them.**
 ```bash
 cd /n/everything-is-search   # or wherever it's cloned
 npm install
-npm run dev                  # open the printed localhost URL; nav switches acts
+npm test                     # 15 pass
+npm run dev                  # open the printed localhost URL; switcher changes systems
 ```

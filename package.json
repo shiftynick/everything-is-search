@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Act I hero — the possibility blob filling in, one adjacent step at a time.",
+  "description": "Everything is search — one engine, many systems: a possibility space filling itself in one adjacent step at a time.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -194,17 +194,22 @@ foundation.
 
 ## 7. Build plan (each phase verified in a real browser before the next)
 
-1. **Engine** — `lib/engine.js`: stepped stochastic sim, five knobs, event-time recording,
-   seeded RNG, regime diagnostics (frontier-size series). Unit tests for the four regimes.
-2. **Visual foundation** — single persistent Canvas; instanced rendering with per-state
+**Status (2026-07-02): all four phases built, merged to `main`, pushed.** 15 tests pass. The
+per-phase notes below are kept as the record of what each covered.
+
+1. **Engine** ✅ — `lib/engine.js`: stepped stochastic sim, five knobs, event-time recording,
+   seeded RNG, regime diagnostics (frontier-size series). Unit tests for the regimes. Landed
+   with **one-shot recruitment** (see §4 implementation note).
+2. **Visual foundation** ✅ — single persistent Canvas; instanced rendering with per-state
    opacity/blending; camera auto-fit; distinct impossible-vs-dark treatment; persistence
-   tint. Verify by eye: interior legible mid-fill, frontier reads as the star, screenshots
-   at t≈0.3/0.7/1.0.
-3. **One-screen shell** — system switcher + preset deck + custom mode + lens panel + verdict;
-   delete the act nav. Retune all six presets against the new engine so each leaves an
-   honest unrealized remainder (assert: no preset reaches 100%).
-4. **Polish pass** — thesis copy back to "everything is search" arc, legend, stats-as-
-   evidence line, then the deferred list (descend-zoom, morphologies, real data) re-ranked.
+   tint. Verified by frame-pumping + framebuffer readback (hidden-tab preview can't screenshot):
+   interior legible mid-fill, frontier reads as the star.
+3. **One-screen shell** ✅ — system switcher (started with three: Physics · Biology · Society)
+   + custom mode + lens panel + verdict + frontier sparkline; act nav deleted. All six presets
+   retuned; `tests/domains.test.js` asserts no preset saturates.
+4. **Polish pass** ✅ — thesis "everything is search / nothing is searching" arc woven into the
+   verdict lines; settled-look legibility; render perf. Deferred list (six systems, descend-zoom,
+   morphologies, real data, permalink) re-ranked in [HANDOFF.md](HANDOFF.md).
 
 ## 8. Open questions for the author
 

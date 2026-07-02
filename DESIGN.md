@@ -1,9 +1,16 @@
 # The Space of the Possible
 ### Framework + site design
 
-> **Thesis.** Nothing is searching. The possible is filling itself in, one adjacent
-> step at a time — and most of it never will. "Aim" is what a filter looks like from
-> inside it.
+> **⚠ Partly superseded — read [REDESIGN.md](REDESIGN.md) for the current direction.** The
+> **conceptual anatomy (§1–§4: the five lenses) still holds** and is load-bearing. But two things
+> changed after an author interview (2026-07-02): the headline thesis was **restored to
+> "everything is search"** (universality), with *"nothing is searching"* demoted to a resolving
+> beat; and the **three-act site plan (§5–§8) was replaced** by a single one-screen visualizer.
+> What actually shipped is described in [README.md](README.md) and [HANDOFF.md](HANDOFF.md).
+
+> **Thesis (as originally written; see banner above).** Nothing is searching. The possible is
+> filling itself in, one adjacent step at a time — and most of it never will. "Aim" is what a
+> filter looks like from inside it.
 
 This document is the conceptual spine and the site design. It supersedes the earlier
 "ball on a fitness landscape" framing. The hero object is no longer a searcher moving
