@@ -114,7 +114,48 @@ html, body, #root {
   .row { flex-wrap: wrap; }
 }
 
-/* ---- Act navigation shell ---- */
+/* ---- System switcher (Phase 3 shell) ---- */
+.switcher {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  background: var(--panel);
+  border: 0.5px solid var(--line);
+  border-radius: 12px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 20;
+}
+.switcher button {
+  font-size: 12.5px;
+  padding: 7px 14px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.switcher button:hover { color: var(--ink); }
+.switcher button.on { background: rgba(255, 255, 255, 0.08); color: var(--ink); }
+
+/* verdict + sparkline row inside the playback panel */
+.verdict-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.spark-wrap { flex: none; color: var(--muted); }
+.spark { display: block; width: 150px; height: 32px; }
+
+/* ---- Act navigation shell (legacy) ---- */
 .actnav {
   position: absolute;
   top: 16px;
