@@ -16,7 +16,8 @@ A react-three-fiber build of the site. Switch acts with the nav at the top.
   it or *die* to a core, with a live verdict. Click any cell to name it: actualized,
   impossible, or the unrealized.
 
-See [DESIGN.md](DESIGN.md) for the full concept and site plan.
+See [DESIGN.md](DESIGN.md) for the full concept and site plan, and [HANDOFF.md](HANDOFF.md) for
+current status, decisions, and next steps.
 
 ## Run
 
