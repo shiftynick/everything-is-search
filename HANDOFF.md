@@ -1,5 +1,11 @@
 # Handoff — The Space of the Possible
 
+> **2026-07-02: superseded in part by [REDESIGN.md](REDESIGN.md)** — the first real-browser
+> review found thesis-level visual failures, and an author interview corrected the project's
+> direction (thesis restored to "everything is search"; three acts replaced by a single
+> multi-system visualizer; richer emergent dynamics). Read REDESIGN.md first; the notes below
+> describe the pre-redesign build.
+
 Status notes for picking this back up. For the *why* read [DESIGN.md](DESIGN.md); for *what it
 does / how to run it* read [README.md](README.md). This file is the "where we are and what's next."
 
